@@ -11,18 +11,20 @@
     <!-- 页面主体区域 -->
     <el-container>
       <!-- 侧边栏 -->
-      <el-aside width="200px">
-        <el-menu background-color="#333744" text-color="#fff">
+      <el-aside :width="isCollapse?'64px':'200px'">
+        <el-menu background-color="#333744" text-color="#fff" active-text-color="blue"  unique-opened :collapse="isCollapse" :collapse-transition="false" router 
+        :default-active="activePath">
+            <div class="changeCollapse" @click="toggleCollapse" >|||</div>
             <!-- 一级菜单 -->
             <el-submenu :index="item.id+''" v-for="item in menuList" :key="item.id">
                 <template slot="title">
-                <i class="el-icon-location"></i>
+                <i :class="iconsObj[item.id]"></i>
                 <span>{{item.authName}}</span>
                 </template>
                 <!-- 二级菜单 -->
-                <el-menu-item :index="subItem.id+''" v-for="subItem in item.children" :key="subItem.id">
+                <el-menu-item :index="'/'+subItem.path" v-for="subItem in item.children" :key="subItem.id" @click="savePath(subItem.path)">
                 <template slot="title">
-                    <i class="el-icon-location"></i>
+                    <i class="el-icon-menu"></i>
                     <span>{{subItem.authName}}</span>
                 </template>
                 </el-menu-item>
@@ -31,7 +33,9 @@
         </el-menu>
       </el-aside>
       <!-- 右边主体部分 -->
-      <el-main>Main</el-main>
+      <el-main>
+        <router-view></router-view>
+      </el-main>
     </el-container>
   </el-container>
 </template>
@@ -42,7 +46,17 @@ export default {
     return {
         //左侧菜单数据
         menuList:[],
-
+        iconsObj:{
+          '125':'iconfont icon-user',
+          '103':'iconfont icon-tijikongjian',
+          '101':'iconfont icon-shangpin',
+          '102':'iconfont icon-danju',
+          '145':'iconfont icon-baobiao',
+        },
+        //是否折叠
+        isCollapse:false,
+        // 激活链接
+        activePath:''
     };
   },
   methods: {
@@ -58,11 +72,24 @@ export default {
         this.menuList = res.data
         console.log(this.menuList)
         
+    },
+    // 切换列表 折叠状态
+    toggleCollapse(){
+      this.isCollapse = !this.isCollapse
+    },
+    // 保存 连接激活状态
+    savePath(path){
+      this.activePath = '/' +path 
+      // 持久存储
+      window.sessionStorage.setItem('path',this.activePath)
     }
+ 
   },
   created(){
       //请求列表数据
     this.getMenuList()
+      //页面刷新时获取 path值
+      this.activePath = window.sessionStorage.getItem('path')
   }
 };
 </script>
@@ -87,9 +114,26 @@ export default {
   }
   .el-aside {
     background-color: #333744;
+    .el-menu {
+      border-right: 0;
+    }
+    .changeCollapse {
+      text-align: center;
+      color:#fff;
+      cursor: pointer;
+      background: #4A5064;
+      font-size: 14px;
+      height: 24px;
+      line-height: 24px;
+      letter-spacing: 2px
+    }
   }
   .el-main {
     background-color: #eaedf1;
   }
+}
+.iconfont {
+  margin-right: 10px;
+  
 }
 </style>
